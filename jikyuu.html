@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可処分所得を計算する</title>
+    <meta name="description" content="時給と勤務時間から可処分所得を計算するアプリ">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <h1>時給と毎月の労働時間から所得税・保険料・可処分所得を計算するプログラム</h1>
+        <form name="form">
+            <input type="radio" name="age" value="u_39" checked="checked"><span>39歳以下</span>
+            <input type="radio" name="age" value="o_40"><span>40歳以上</span>
+            <p>時給</p>
+            <input type="number" id="jikyuu" min="1000" value="1000" step="100">
+            <p>毎月の労働時間</p>
+            <span>月</span><input type="number" id="worktime" value="100"><span>時間</span>
+            <p>その他収入</p>
+            <input type="number" id="other" value="0">
+        </form>
+        <button id="calc">計算する</button>
+        <p id="shotokuzei"></p>
+        <p id="month_shotokuzei"></p>
+        <p id="shakaihokenn"></p>
+        <p id="month_shakaihokenn"></p>
+        <p id="dispo_income"></p>
+        <p id="month_dispo_income"></p>
+    </div>
+</body>
+<script>
+    
+    document.getElementById('calc').addEventListener('click', function(){
+        const jikyuu = document.getElementById('jikyuu').value;
+        const worktime = document.getElementById('worktime').value;
+        const other_income = document.getElementById('other').value;
+        console.log(jikyuu);
+        console.log(worktime);
+        console.log(other_income);
+
+        const income =  other_income + jikyuu * worktime * 12;
+
+        //所得税の計算
+        let tax = 0;
+        let deduction = 0;
+        if(income >= 1000 && income < 1949000){
+            tax = 5;
+            deduction = 0;
+        }else if(income >= 1950000 && income < 3299000){
+            tax = 10;
+            deduction = 97500;
+        }else if(income >= 3300000 && income < 6949000){
+            tax = 20;
+            deduction = 427500;
+        }else if(income >= 6950000 && income < 8999000){
+            tax = 23;
+            deduction = 636000;
+        }else if(income >= 9000000 && income < 17999000){
+            tax = 33;
+            deduction = 1536000;
+        }else if(income >= 18000000 && income < 39999000){
+            tax = 0;
+            deduction = 5;
+        }else if(income >= 40000000){
+            tax = 45;
+            deduction = 4796000;
+        }
+
+        //健康保険の計算
+        let kennko = jikyuu * worktime * 0.0987;
+
+        //介護保険料の設定
+        let age_range = document.form.age.value;
+        console.log(age_range);
+        
+        let kaigo = 0;
+        if(age_range === "u_39"){
+            kaigo = 0;
+        }else if(age_range === "o_40"){
+            kaigo = income * 0.018;
+        }
+        console.log(kaigo);
+
+        //雇用保険の計算
+        let koyou = jikyuu * worktime * 0.3;
+
+        //社会保険料の合計
+        let shakai = kennko + kaigo + koyou;
+        console.log(shakai);
+        
+        const income_after_tax = income * (100 - tax) / 100
+        const d_income =  income_after_tax+ deduction - shakai;
+        
+        //HTMLへの書き出し
+        document.getElementById('shotokuzei').innerHTML = `年間の所得税は${income * tax / 100}円です`;
+        document.getElementById('month_shotokuzei').innerHTML = `毎月の所得税は${income * tax / 100 / 12}円です`;
+        document.getElementById('shakaihokenn').innerHTML = `年間の社会保険料は${shakai * 12}円です`;
+        document.getElementById('month_shakaihokenn').innerHTML = `毎月の社会保険料は${shakai}円です`;
+        document.getElementById('dispo_income').innerHTML = `年間の可処分所得は${d_income}円です`;
+        document.getElementById('month_dispo_income').innerHTML = `毎月の可処分所得は${d_income / 12}円です`;
+    })
+</script>
+</html>
